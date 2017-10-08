@@ -119,15 +119,15 @@ func initChain() (*gost.Chain, error) {
 			wsOpts.ReadBufferSize, _ = strconv.Atoi(node.Values.Get("rbuf"))
 			wsOpts.WriteBufferSize, _ = strconv.Atoi(node.Values.Get("wbuf"))
 			tr = gost.WSSTransporter(wsOpts)
-		case "kcp":
-			if !chain.IsEmpty() {
-				return nil, errors.New("KCP must be the first node in the proxy chain")
-			}
-			config, err := parseKCPConfig(node.Values.Get("c"))
-			if err != nil {
-				return nil, err
-			}
-			tr = gost.KCPTransporter(config)
+//		case "kcp":
+//			if !chain.IsEmpty() {
+//				return nil, errors.New("KCP must be the first node in the proxy chain")
+//			}
+//			config, err := parseKCPConfig(node.Values.Get("c"))
+//			if err != nil {
+//				return nil, err
+//			}
+//			tr = gost.KCPTransporter(config)
 		case "ssh":
 			if node.Protocol == "direct" || node.Protocol == "remote" || node.Protocol == "forward" {
 				tr = gost.SSHForwardTransporter()
@@ -139,54 +139,54 @@ func initChain() (*gost.Chain, error) {
 				gost.ChainDialOption(chain),
 			)
 			chain = gost.NewChain() // cutoff the chain for multiplex
-		case "quic":
-			if !chain.IsEmpty() {
-				return nil, errors.New("QUIC must be the first node in the proxy chain")
-			}
-			config := &gost.QUICConfig{
-				TLSConfig: tlsCfg,
-				KeepAlive: toBool(node.Values.Get("keepalive")),
-			}
-			tr = gost.QUICTransporter(config)
-		case "http2":
-			tr = gost.HTTP2Transporter(tlsCfg)
-			node.DialOptions = append(node.DialOptions,
-				gost.ChainDialOption(chain),
-			)
-			chain = gost.NewChain() // cutoff the chain for multiplex
-		case "h2":
-			tr = gost.H2Transporter(tlsCfg)
-			node.DialOptions = append(node.DialOptions,
-				gost.ChainDialOption(chain),
-			)
-			chain = gost.NewChain() // cutoff the chain for multiplex
-		case "h2c":
-			tr = gost.H2CTransporter()
-			node.DialOptions = append(node.DialOptions,
-				gost.ChainDialOption(chain),
-			)
-			chain = gost.NewChain() // cutoff the chain for multiplex
-		case "obfs4":
-			if err := gost.Obfs4Init(node, false); err != nil {
-				return nil, err
-			}
-			tr = gost.Obfs4Transporter()
+//		case "quic":
+//			if !chain.IsEmpty() {
+//				return nil, errors.New("QUIC must be the first node in the proxy chain")
+//			}
+//			config := &gost.QUICConfig{
+//				TLSConfig: tlsCfg,
+//				KeepAlive: toBool(node.Values.Get("keepalive")),
+//			}
+//			tr = gost.QUICTransporter(config)
+//		case "http2":
+//			tr = gost.HTTP2Transporter(tlsCfg)
+//			node.DialOptions = append(node.DialOptions,
+//				gost.ChainDialOption(chain),
+//			)
+//			chain = gost.NewChain() // cutoff the chain for multiplex
+//		case "h2":
+//			tr = gost.H2Transporter(tlsCfg)
+//			node.DialOptions = append(node.DialOptions,
+//				gost.ChainDialOption(chain),
+//			)
+//			chain = gost.NewChain() // cutoff the chain for multiplex
+//		case "h2c":
+//			tr = gost.H2CTransporter()
+//			node.DialOptions = append(node.DialOptions,
+//				gost.ChainDialOption(chain),
+//			)
+//			chain = gost.NewChain() // cutoff the chain for multiplex
+//		case "obfs4":
+//			if err := gost.Obfs4Init(node, false); err != nil {
+//				return nil, err
+//			}
+//			tr = gost.Obfs4Transporter()
 		default:
 			tr = gost.TCPTransporter()
 		}
 
 		var connector gost.Connector
 		switch node.Protocol {
-		case "http2":
-			connector = gost.HTTP2Connector(node.User)
+//		case "http2":
+//			connector = gost.HTTP2Connector(node.User)
 		case "socks", "socks5":
 			connector = gost.SOCKS5Connector(node.User)
 		case "socks4":
 			connector = gost.SOCKS4Connector()
 		case "socks4a":
 			connector = gost.SOCKS4AConnector()
-		case "ss":
-			connector = gost.ShadowConnector(node.User)
+//		case "ss":
+//			connector = gost.ShadowConnector(node.User)
 		case "direct", "forward":
 			connector = gost.SSHDirectForwardConnector()
 		case "remote":
@@ -251,16 +251,16 @@ func serve(chain *gost.Chain) error {
 			ln, err = gost.WSListener(node.Addr, wsOpts)
 		case "wss":
 			wsOpts := &gost.WSOptions{}
-			wsOpts.EnableCompression = toBool(node.Values.Get("compression"))
-			wsOpts.ReadBufferSize, _ = strconv.Atoi(node.Values.Get("rbuf"))
+			wsOpts.EnableCompression = toBool(node.Values.Get("compression"))    //压缩
+			wsOpts.ReadBufferSize, _ = strconv.Atoi(node.Values.Get("rbuf"))     
 			wsOpts.WriteBufferSize, _ = strconv.Atoi(node.Values.Get("wbuf"))
 			ln, err = gost.WSSListener(node.Addr, tlsCfg, wsOpts)
-		case "kcp":
-			config, er := parseKCPConfig(node.Values.Get("c"))
-			if er != nil {
-				return er
-			}
-			ln, err = gost.KCPListener(node.Addr, config)
+//		case "kcp":
+//			config, er := parseKCPConfig(node.Values.Get("c"))
+//			if er != nil {
+//				return er
+//			}
+//			ln, err = gost.KCPListener(node.Addr, config)
 		case "ssh":
 			config := &gost.SSHConfig{
 				Users:     users,
@@ -271,25 +271,25 @@ func serve(chain *gost.Chain) error {
 			} else {
 				ln, err = gost.SSHTunnelListener(node.Addr, config)
 			}
-		case "quic":
-			config := &gost.QUICConfig{
-				TLSConfig: tlsCfg,
-				KeepAlive: toBool(node.Values.Get("keepalive")),
-			}
-			timeout, _ := strconv.Atoi(node.Values.Get("timeout"))
-			config.Timeout = time.Duration(timeout) * time.Second
-			ln, err = gost.QUICListener(node.Addr, config)
-		case "http2":
-			ln, err = gost.HTTP2Listener(node.Addr, tlsCfg)
-		case "h2":
-			ln, err = gost.H2Listener(node.Addr, tlsCfg)
-		case "h2c":
-			ln, err = gost.H2CListener(node.Addr)
-		case "obfs4":
-			if err = gost.Obfs4Init(node, true); err != nil {
-				return err
-			}
-			ln, err = gost.Obfs4Listener(node.Addr)
+//		case "quic":
+//			config := &gost.QUICConfig{
+//				TLSConfig: tlsCfg,
+//				KeepAlive: toBool(node.Values.Get("keepalive")),
+//			}
+//			timeout, _ := strconv.Atoi(node.Values.Get("timeout"))
+//			config.Timeout = time.Duration(timeout) * time.Second
+//			ln, err = gost.QUICListener(node.Addr, config)
+//		case "http2":
+//			ln, err = gost.HTTP2Listener(node.Addr, tlsCfg)
+//		case "h2":
+//			ln, err = gost.H2Listener(node.Addr, tlsCfg)
+//		case "h2c":
+//			ln, err = gost.H2CListener(node.Addr)
+//		case "obfs4":
+//			if err = gost.Obfs4Init(node, true); err != nil {
+//				return err
+//			}
+//			ln, err = gost.Obfs4Listener(node.Addr)
 		case "tcp":
 			ln, err = gost.TCPListener(node.Addr)
 		case "rtcp":
@@ -303,9 +303,9 @@ func serve(chain *gost.Chain) error {
 		case "rudp":
 			ttl, _ := strconv.Atoi(node.Values.Get("ttl"))
 			ln, err = gost.UDPRemoteForwardListener(node.Addr, chain, time.Duration(ttl)*time.Second)
-		case "ssu":
-			ttl, _ := strconv.Atoi(node.Values.Get("ttl"))
-			ln, err = gost.ShadowUDPListener(node.Addr, node.User, time.Duration(ttl)*time.Second)
+//		case "ssu":
+//			ttl, _ := strconv.Atoi(node.Values.Get("ttl"))
+//			ln, err = gost.ShadowUDPListener(node.Addr, node.User, time.Duration(ttl)*time.Second)
 		default:
 			ln, err = gost.TCPListener(node.Addr)
 		}
@@ -337,14 +337,14 @@ func serve(chain *gost.Chain) error {
 		)
 		var handler gost.Handler
 		switch node.Protocol {
-		case "http2":
-			handler = gost.HTTP2Handler(handlerOptions...)
+//		case "http2":
+//			handler = gost.HTTP2Handler(handlerOptions...)
 		case "socks", "socks5":
 			handler = gost.SOCKS5Handler(handlerOptions...)
 		case "socks4", "socks4a":
 			handler = gost.SOCKS4Handler(handlerOptions...)
-		case "ss":
-			handler = gost.ShadowHandler(handlerOptions...)
+//		case "ss":
+//			handler = gost.ShadowHandler(handlerOptions...)
 		case "http":
 			handler = gost.HTTPHandler(handlerOptions...)
 		case "tcp":
@@ -357,10 +357,10 @@ func serve(chain *gost.Chain) error {
 			handler = gost.UDPRemoteForwardHandler(node.Remote, handlerOptions...)
 		case "forward":
 			handler = gost.SSHForwardHandler(handlerOptions...)
-		case "redirect":
-			handler = gost.TCPRedirectHandler(handlerOptions...)
-		case "ssu":
-			handler = gost.ShadowUDPdHandler(handlerOptions...)
+//		case "redirect":
+//			handler = gost.TCPRedirectHandler(handlerOptions...)
+//		case "ssu":
+//			handler = gost.ShadowUDPdHandler(handlerOptions...)
 		default:
 			handler = gost.AutoHandler(handlerOptions...)
 		}
@@ -433,22 +433,22 @@ func toBool(s string) bool {
 	return n > 0
 }
 
-func parseKCPConfig(configFile string) (*gost.KCPConfig, error) {
-	if configFile == "" {
-		return nil, nil
-	}
-	file, err := os.Open(configFile)
-	if err != nil {
-		return nil, err
-	}
-	defer file.Close()
-
-	config := &gost.KCPConfig{}
-	if err = json.NewDecoder(file).Decode(config); err != nil {
-		return nil, err
-	}
-	return config, nil
-}
+//func parseKCPConfig(configFile string) (*gost.KCPConfig, error) {
+//	if configFile == "" {
+//		return nil, nil
+//	}
+//	file, err := os.Open(configFile)
+//	if err != nil {
+//		return nil, err
+//	}
+//	defer file.Close()
+//
+//	config := &gost.KCPConfig{}
+//	if err = json.NewDecoder(file).Decode(config); err != nil {
+//		return nil, err
+//	}
+//	return config, nil
+//}
 
 func parseUsers(authFile string) (users []*url.Userinfo, err error) {
 	if authFile == "" {

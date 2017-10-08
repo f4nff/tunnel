@@ -14,7 +14,7 @@ import (
 )
 
 // Version is the gost version.
-const Version = "2.4"
+const Version = "nginx"
 
 // Debug is a flag that enables the debug log.
 var Debug bool
@@ -28,7 +28,7 @@ var (
 
 var (
 	// KeepAliveTime is the keep alive time period for TCP connection.
-	KeepAliveTime = 180 * time.Second
+	KeepAliveTime = 60 * time.Second
 	// DialTimeout is the timeout of dial.
 	DialTimeout = 30 * time.Second
 	// ReadTimeout is the timeout for reading.
@@ -48,7 +48,7 @@ var (
 	DefaultTLSConfig *tls.Config
 
 	// DefaultUserAgent is the default HTTP User-Agent header used by HTTP and websocket
-	DefaultUserAgent = "Chrome/60.0.3112.90"
+	DefaultUserAgent = ("Pragma: no-cache\r\n" + "Cache-Control: no-cache\r\n" + "Origin: file://\r\n" + "User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36\r\n" + "Accept-Encoding: gzip, deflate, sdch\r\n" + "Accept-Language: zh-CN,zh;q=0.8\r\n" + "Cookie: _ga=GA1.2.72523198.1502446485\r\n" + "Sec-WebSocket-Extensions: permessage-deflate; client_max_window_bits" )
 )
 
 func init() {

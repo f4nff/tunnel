@@ -100,7 +100,7 @@ func (h *httpHandler) Handle(conn net.Conn) {
 
 	if req.Method == "PRI" || (req.Method != http.MethodConnect && req.URL.Scheme != "http") {
 		resp := "HTTP/1.1 400 Bad Request\r\n" +
-			"Proxy-Agent: gost/" + Version + "\r\n\r\n"
+			"Server: whttpd/5.1\r\n" + "\r\n\r\n"
 		conn.Write([]byte(resp))
 		if Debug {
 			log.Logf("[http] %s <- %s\n%s", conn.RemoteAddr(), req.Host, resp)
@@ -111,7 +111,7 @@ func (h *httpHandler) Handle(conn net.Conn) {
 	if !Can("tcp", req.Host, h.options.Whitelist, h.options.Blacklist) {
 		log.Logf("[http] Unauthorized to tcp connect to %s", req.Host)
 		b := []byte("HTTP/1.1 403 Forbidden\r\n" +
-			"Proxy-Agent: gost/" + Version + "\r\n\r\n")
+			"Server: whttpd/5.1\r\n" + "\r\n\r\n")
 		conn.Write(b)
 		if Debug {
 			log.Logf("[http] %s <- %s\n%s", conn.RemoteAddr(), req.Host, string(b))
@@ -127,7 +127,7 @@ func (h *httpHandler) Handle(conn net.Conn) {
 		log.Logf("[http] %s <- %s : proxy authentication required", conn.RemoteAddr(), req.Host)
 		resp := "HTTP/1.1 407 Proxy Authentication Required\r\n" +
 			"Proxy-Authenticate: Basic realm=\"gost\"\r\n" +
-			"Proxy-Agent: gost/" + Version + "\r\n\r\n"
+			"Server: whttpd/5.1\r\n" + "\r\n\r\n"
 		conn.Write([]byte(resp))
 		return
 	}
@@ -151,7 +151,7 @@ func (h *httpHandler) Handle(conn net.Conn) {
 		log.Logf("[http] %s -> %s : %s", conn.RemoteAddr(), req.Host, err)
 
 		b := []byte("HTTP/1.1 503 Service unavailable\r\n" +
-			"Proxy-Agent: gost/" + Version + "\r\n\r\n")
+			"Server: whttpd/5.1\r\n" + "\r\n\r\n")
 		if Debug {
 			log.Logf("[http] %s <- %s\n%s", conn.RemoteAddr(), req.Host, string(b))
 		}
@@ -161,8 +161,8 @@ func (h *httpHandler) Handle(conn net.Conn) {
 	defer cc.Close()
 
 	if req.Method == http.MethodConnect {
-		b := []byte("HTTP/1.1 200 Connection established\r\n" +
-			"Proxy-Agent: gost/" + Version + "\r\n\r\n")
+		b := []byte("HTTP/1.1 200 ok\r\n" +
+			"Connection: keep-alive\r\n" + "Server: whttpd/5.1\r\n" + "\r\n\r\n")
 		if Debug {
 			log.Logf("[http] %s <- %s\n%s", conn.RemoteAddr(), req.Host, string(b))
 		}
@@ -192,7 +192,7 @@ func (h *httpHandler) forwardRequest(conn net.Conn, req *http.Request) {
 		log.Logf("[http] %s -> %s : %s", conn.RemoteAddr(), lastNode.Addr, err)
 
 		b := []byte("HTTP/1.1 503 Service unavailable\r\n" +
-			"Proxy-Agent: gost/" + Version + "\r\n\r\n")
+			"Server: whttpd/5.1\r\n" + "\r\n\r\n")
 		if Debug {
 			log.Logf("[http] %s <- %s\n%s", conn.RemoteAddr(), lastNode.Addr, string(b))
 		}
